@@ -7,6 +7,8 @@
 
 import unittest
 
-import mountuppkg/submodule
-test "correct welcome":
-  check getWelcomeMessage() == "Hello, World!"
+import mountup
+
+test "Converting bold commands":
+  const mtUpWithBoldCommands = "normal [* bold] normal"
+  check mtupParse(mtUpWithBoldCommands) == "<p>normal <b>bold</b> normal</p>"

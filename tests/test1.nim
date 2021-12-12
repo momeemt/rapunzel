@@ -11,4 +11,36 @@ import mountup
 
 test "Converting bold commands":
   const mtUpWithBoldCommands = "normal [* bold] normal"
-  check mtupParse(mtUpWithBoldCommands) == "<p>normal <b>bold</b> normal</p>"
+  check mtUpWithBoldCommands.mtupParse.astToHtml() == "<p>normal <b>bold</b> normal</p>"
+
+test "Converting italic commands":
+  const mtUpWithBoldCommands = "normal [/ italic] normal"
+  check mtUpWithBoldCommands.mtupParse.astToHtml() == "<p>normal <em>italic</em> normal</p>"
+
+test "Converting variable commands":
+  const mtUpWithBoldCommands = "normal [% title, momeemt's blog] normal"
+  check mtUpWithBoldCommands.mtupParse.astToHtml() == "<p>normal  normal</p>"
+
+test "Converting expand commands":
+  const mtUpWithBoldCommands = "normal [= title] normal"
+  check mtUpWithBoldCommands.mtupParse.astToHtml() == "<p>normal momeemt's blog normal</p>"
+
+test "Converting block variable commands":
+  const mtUpWithBoldCommands = "{% foo, momeemt's blog}"
+  check mtUpWithBoldCommands.mtupParse.astToHtml() == ""
+
+test "Fail to convert expand commands":
+  const mtUpWithBoldCommands = "normal [= undefinedVar] normal"
+  expect KeyError:
+    discard mtUpWithBoldCommands.mtupParse.astToHtml()
+
+test "Fail to reassignment variable":
+  const mtUpWithBoldCommands = "{% foo, someone's blog}"
+  expect ReassignmentDefect:
+    discard mtUpWithBoldCommands.mtupParse.astToHtml()
+
+test "Newline":
+  const mtUpWithBoldCommands = """
+foo
+bar"""
+  check mtUpWithBoldCommands.mtupParse.astToHtml() == "<p>foo</p><p>bar</p>"

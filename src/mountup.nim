@@ -50,6 +50,8 @@ proc mtupParse* (rawMtup: string): MtupNode =
 
 var mtupVarsTable = initTable[string, string]()
 
+type ReassignmentDefect* = object of Defect
+
 proc childrenValue (ast: MtupNode): string
 
 proc astToHtml* (ast: MtupNode): string =
@@ -61,7 +63,10 @@ proc astToHtml* (ast: MtupNode): string =
     let
       varName = ast.value.split(',')[0].strip
       varValue = ast.value.split(',')[1].strip
-    mtupVarsTable[varName] = varValue
+    if mtupVarsTable.hasKey(varName):
+      raise newException(ReassignmentDefect, &"Variable {ast.value} is already defined.")
+    else:
+      mtupVarsTable[varName] = varValue
     ""
   of mkExpand:
     let res = if mtupVarsTable.hasKey(ast.value):

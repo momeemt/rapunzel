@@ -1,4 +1,4 @@
-import strutils, tables, strformat
+import strutils, tables, strformat, times
 
 type
   MtupNode = object
@@ -49,6 +49,7 @@ proc mtupParse* (rawMtup: string): MtupNode =
   result.children[result.children.high].children.add childNode
 
 var mtupVarsTable = initTable[string, string]()
+mtupVarsTable["now"] = ""
 
 type ReassignmentDefect* = object of Defect
 
@@ -70,7 +71,11 @@ proc astToHtml* (ast: MtupNode): string =
     ""
   of mkExpand:
     let res = if mtupVarsTable.hasKey(ast.value):
-      mtupVarsTable[ast.value]
+      let res = case ast.value:
+      of "now": times.now().format("yyyy-MM-dd HH:mm:ss")
+      else:
+        mtupVarsTable[ast.value]
+      res
     else:
       raise newException(KeyError, &"Variable {ast.value} is undefined.")
     res

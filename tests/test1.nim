@@ -5,7 +5,7 @@
 #
 # To run these tests, simply execute `nimble test`.
 
-import unittest
+import unittest, strformat, times
 
 import mountup
 
@@ -44,3 +44,11 @@ test "Newline":
 foo
 bar"""
   check mtUpWithBoldCommands.mtupParse.astToHtml() == "<p>foo</p><p>bar</p>"
+
+test "Complex converting":
+  const mtUpWithBoldCommands = """
+{% name, momeemt}
+Hi, I'm [= name].
+I like [* computer science].
+[= now]"""
+  check mtUpWithBoldCommands.mtupParse.astToHtml() == &"<p>Hi, I'm momeemt.</p><p>I like <b>computer science</b>.</p><p>{times.now().format(\"yyyy-MM-dd HH:mm:ss\")}</p>"

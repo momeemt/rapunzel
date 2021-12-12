@@ -1,3 +1,5 @@
+import strutils, tables, strformat
+
 type
   MtupNode = object
     kind: MtupNodeKind
@@ -6,6 +8,7 @@ type
 
   MtupNodeKind = enum
     mkDocument, mkParagraph, mkBlock, mkText, mkBold, mkItalic
+    mkVariable, mkExpand
 
 proc mtupParse* (rawMtup: string): MtupNode =
   result = MtupNode(kind: mkDocument)
@@ -20,14 +23,18 @@ proc mtupParse* (rawMtup: string): MtupNode =
       skipCount -= 1
       continue
     let rawMtupChar = rawMtup[index]
-    if rawMtupChar == '[':
+    if rawMtupChar == '[' or rawMtupChar == '{':
       result.children[result.children.high].children.add childNode
       if rawMtup[index+1] == '*':
         childNode = MtupNode(kind: mkBold)
       elif rawMtup[index+1] == '/':
         childNode = MtupNode(kind: mkItalic)
+      elif rawMtup[index+1] == '%':
+        childNode = MtupNode(kind: mkVariable)
+      elif rawMtup[index+1] == '=':
+        childNode = MtupNode(kind: mkExpand)
       skipCount = 2
-    elif rawMtupChar == ']':
+    elif rawMtupChar == ']' or rawMtupChar == '}':
       result.children[result.children.high].children.add childNode
       childNode = MtupNode(kind: mkText)
     elif rawMtupChar == '\n':
@@ -41,6 +48,8 @@ proc mtupParse* (rawMtup: string): MtupNode =
       childNode.value.add rawMtupChar
   result.children[result.children.high].children.add childNode
 
+var mtupVarsTable = initTable[string, string]()
+
 proc childrenValue (ast: MtupNode): string
 
 proc astToHtml* (ast: MtupNode): string =
@@ -48,6 +57,18 @@ proc astToHtml* (ast: MtupNode): string =
   of mkText: ast.value
   of mkBold: "<b>" & ast.value & "</b>"
   of mkItalic: "<em>" & ast.value & "</em>"
+  of mkVariable:
+    let
+      varName = ast.value.split(',')[0].strip
+      varValue = ast.value.split(',')[1].strip
+    mtupVarsTable[varName] = varValue
+    ""
+  of mkExpand:
+    let res = if mtupVarsTable.hasKey(ast.value):
+      mtupVarsTable[ast.value]
+    else:
+      raise newException(KeyError, &"Variable {ast.value} is undefined.")
+    res
   of mkParagraph: "<p>" & ast.childrenValue & "</p>"
   of mkDocument, mkBlock: ast.childrenValue
 

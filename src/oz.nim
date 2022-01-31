@@ -10,7 +10,7 @@ type
     ozDocument, ozParagraph, ozBlock, ozText, ozBold, ozItalic
     ozVariable, ozExpand
 
-proc mtupParse* (rawMtup: string): OzNode =
+proc ozParse* (rawMtup: string): OzNode =
   result = OzNode(kind: ozDocument)
   if rawMtup.len >= 2 and rawMtup[0] == '{':
     result.children.add OzNode(kind: ozBlock)

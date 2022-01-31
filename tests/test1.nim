@@ -10,45 +10,45 @@ import unittest, strformat, times
 import oz
 
 test "Converting bold commands":
-  const mtUpWithBoldCommands = "normal [* bold] normal"
-  check mtUpWithBoldCommands.mtupParse.astToHtml() == "<p>normal <b>bold</b> normal</p>"
+  const ozWithBoldCommands = "normal [* bold] normal"
+  check ozWithBoldCommands.ozParse.astToHtml() == "<p>normal <b>bold</b> normal</p>"
 
 test "Converting italic commands":
-  const mtUpWithBoldCommands = "normal [/ italic] normal"
-  check mtUpWithBoldCommands.mtupParse.astToHtml() == "<p>normal <em>italic</em> normal</p>"
+  const ozWithBoldCommands = "normal [/ italic] normal"
+  check ozWithBoldCommands.ozParse.astToHtml() == "<p>normal <em>italic</em> normal</p>"
 
 test "Converting variable commands":
-  const mtUpWithBoldCommands = "normal [% title, momeemt's blog] normal"
-  check mtUpWithBoldCommands.mtupParse.astToHtml() == "<p>normal  normal</p>"
+  const ozWithBoldCommands = "normal [% title, momeemt's blog] normal"
+  check ozWithBoldCommands.ozParse.astToHtml() == "<p>normal  normal</p>"
 
 test "Converting expand commands":
-  const mtUpWithBoldCommands = "normal [= title] normal"
-  check mtUpWithBoldCommands.mtupParse.astToHtml() == "<p>normal momeemt's blog normal</p>"
+  const ozWithBoldCommands = "normal [= title] normal"
+  check ozWithBoldCommands.ozParse.astToHtml() == "<p>normal momeemt's blog normal</p>"
 
 test "Converting block variable commands":
-  const mtUpWithBoldCommands = "{% foo, momeemt's blog}"
-  check mtUpWithBoldCommands.mtupParse.astToHtml() == ""
+  const ozWithBoldCommands = "{% foo, momeemt's blog}"
+  check ozWithBoldCommands.ozParse.astToHtml() == ""
 
 test "Fail to convert expand commands":
-  const mtUpWithBoldCommands = "normal [= undefinedVar] normal"
+  const ozWithBoldCommands = "normal [= undefinedVar] normal"
   expect KeyError:
-    discard mtUpWithBoldCommands.mtupParse.astToHtml()
+    discard ozWithBoldCommands.ozParse.astToHtml()
 
 test "Fail to reassignment variable":
-  const mtUpWithBoldCommands = "{% foo, someone's blog}"
+  const ozWithBoldCommands = "{% foo, someone's blog}"
   expect ReassignmentDefect:
-    discard mtUpWithBoldCommands.mtupParse.astToHtml()
+    discard ozWithBoldCommands.ozParse.astToHtml()
 
 test "Newline":
-  const mtUpWithBoldCommands = """
+  const ozWithBoldCommands = """
 foo
 bar"""
-  check mtUpWithBoldCommands.mtupParse.astToHtml() == "<p>foo</p><p>bar</p>"
+  check ozWithBoldCommands.ozParse.astToHtml() == "<p>foo</p><p>bar</p>"
 
 test "Complex converting":
-  const mtUpWithBoldCommands = """
+  const ozWithBoldCommands = """
 {% name, momeemt}
 Hi, I'm [= name].
 I like [* computer science].
 [= now]"""
-  check mtUpWithBoldCommands.mtupParse.astToHtml() == &"<p>Hi, I'm momeemt.</p><p>I like <b>computer science</b>.</p><p>{times.now().format(\"yyyy-MM-dd HH:mm:ss\")}</p>"
+  check ozWithBoldCommands.ozParse.astToHtml() == &"<p>Hi, I'm momeemt.</p><p>I like <b>computer science</b>.</p><p>{times.now().format(\"yyyy-MM-dd HH:mm:ss\")}</p>"

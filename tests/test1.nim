@@ -7,7 +7,7 @@
 
 import unittest, strformat, times
 
-import mountup
+import oz
 
 test "Converting bold commands":
   const mtUpWithBoldCommands = "normal [* bold] normal"

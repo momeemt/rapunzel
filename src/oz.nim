@@ -10,42 +10,42 @@ type
     ozDocument, ozParagraph, ozBlock, ozText, ozBold, ozItalic
     ozVariable, ozExpand
 
-proc ozParse* (rawMtup: string): OzNode =
+proc ozParse* (rawOz: string): OzNode =
   result = OzNode(kind: ozDocument)
-  if rawMtup.len >= 2 and rawMtup[0] == '{':
+  if rawOz.len >= 2 and rawOz[0] == '{':
     result.children.add OzNode(kind: ozBlock)
   else:
     result.children.add OzNode(kind: ozParagraph)
   var childNode = OzNode(kind: ozText)
   var skipCount = 0
-  for index in 0..rawMtup.high:
+  for index in 0..rawOz.high:
     if skipCount > 0:
       skipCount -= 1
       continue
-    let rawMtupChar = rawMtup[index]
-    if rawMtupChar == '[' or rawMtupChar == '{':
+    let rawOzChar = rawOz[index]
+    if rawOzChar == '[' or rawOzChar == '{':
       result.children[result.children.high].children.add childNode
-      if rawMtup[index+1] == '*':
+      if rawOz[index+1] == '*':
         childNode = OzNode(kind: ozBold)
-      elif rawMtup[index+1] == '/':
+      elif rawOz[index+1] == '/':
         childNode = OzNode(kind: ozItalic)
-      elif rawMtup[index+1] == '%':
+      elif rawOz[index+1] == '%':
         childNode = OzNode(kind: ozVariable)
-      elif rawMtup[index+1] == '=':
+      elif rawOz[index+1] == '=':
         childNode = OzNode(kind: ozExpand)
       skipCount = 2
-    elif rawMtupChar == ']' or rawMtupChar == '}':
+    elif rawOzChar == ']' or rawOzChar == '}':
       result.children[result.children.high].children.add childNode
       childNode = OzNode(kind: ozText)
-    elif rawMtupChar == '\n':
+    elif rawOzChar == '\n':
       result.children[result.children.high].children.add childNode
-      if rawMtup.high >= index + 2 and rawMtup[index+1] == '{':
+      if rawOz.high >= index + 2 and rawOz[index+1] == '{':
         result.children.add OzNode(kind: ozBlock)
       else:
         result.children.add OzNode(kind: ozParagraph)
       childNode = OzNode(kind: ozText)
     else:
-      childNode.value.add rawMtupChar
+      childNode.value.add rawOzChar
   result.children[result.children.high].children.add childNode
 
 var mtupVarsTable = initTable[string, string]()

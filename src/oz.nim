@@ -23,13 +23,18 @@ proc ozParse* (rawOz: string): OzNode =
       skipCount -= 1
       continue
     let rawOzChar = rawOz[index]
-    if rawOzChar == '[' or rawOzChar == '{':
+    if rawOzChar == '[':
       result.children[result.children.high].children.add childNode
       if rawOz[index+1] == '*':
         childNode = OzNode(kind: ozBold)
       elif rawOz[index+1] == '/':
         childNode = OzNode(kind: ozItalic)
-      elif rawOz[index+1] == '%':
+      elif rawOz[index+1] == '=':
+        childNode = OzNode(kind: ozExpand)
+      skipCount = 2
+    elif rawOzChar == '{':
+      result.children[result.children.high].children.add childNode
+      if rawOz[index+1] == '%':
         childNode = OzNode(kind: ozVariable)
       elif rawOz[index+1] == '=':
         childNode = OzNode(kind: ozExpand)

@@ -17,17 +17,13 @@ test "Converting italic commands":
   const ozWithBoldCommands = "normal [/ italic] normal"
   check ozWithBoldCommands.ozParse.astToHtml() == "<p>normal <em>italic</em> normal</p>"
 
-test "Converting variable commands":
-  const ozWithBoldCommands = "normal [% title, momeemt's blog] normal"
-  check ozWithBoldCommands.ozParse.astToHtml() == "<p>normal  normal</p>"
+test "Converting block variable commands":
+  const ozWithBoldCommands = "{% title, momeemt's blog}"
+  check ozWithBoldCommands.ozParse.astToHtml() == ""
 
 test "Converting expand commands":
   const ozWithBoldCommands = "normal [= title] normal"
   check ozWithBoldCommands.ozParse.astToHtml() == "<p>normal momeemt's blog normal</p>"
-
-test "Converting block variable commands":
-  const ozWithBoldCommands = "{% foo, momeemt's blog}"
-  check ozWithBoldCommands.ozParse.astToHtml() == ""
 
 test "Fail to convert expand commands":
   const ozWithBoldCommands = "normal [= undefinedVar] normal"
@@ -35,6 +31,7 @@ test "Fail to convert expand commands":
     discard ozWithBoldCommands.ozParse.astToHtml()
 
 test "Fail to reassignment variable":
+  discard "{% foo, momeemt's blog}".ozParse().astToHtml()
   const ozWithBoldCommands = "{% foo, someone's blog}"
   expect ReassignmentDefect:
     discard ozWithBoldCommands.ozParse.astToHtml()

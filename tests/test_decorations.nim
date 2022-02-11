@@ -1,5 +1,5 @@
 import unittest
-import oz
+import rapunzel
 
 proc getHtmlContentsFromAssetsDecorations (name: string): string =
   block:
@@ -12,25 +12,25 @@ proc getHtmlContentsFromAssetsDecorations (name: string): string =
 
 test "Bold inline command":
   const rapunzel = "Hello, [* Rapunzel]!"
-  check rapunzel.ozParse.astToHtml() == getHtmlContentsFromAssetsDecorations("boldInlineCommand")
+  check rapunzel.rapunzelParse.astToHtml() == getHtmlContentsFromAssetsDecorations("boldInlineCommand")
 
 test "Italic inline command":
   const rapunzel = "Hello, [/ Rapunzel]!"
-  check rapunzel.ozParse.astToHtml() == getHtmlContentsFromAssetsDecorations("italicInlineCommand")
+  check rapunzel.rapunzelParse.astToHtml() == getHtmlContentsFromAssetsDecorations("italicInlineCommand")
 
 test "Strike inline command":
   const rapunzel = "Hello, [~ Rapunzel]!"
-  check rapunzel.ozParse.astToHtml() == getHtmlContentsFromAssetsDecorations("strikeInlineCommand")
+  check rapunzel.rapunzelParse.astToHtml() == getHtmlContentsFromAssetsDecorations("strikeInlineCommand")
 
 test "Underline inline command":
   const rapunzel = "Hello, [_ Rapunzel]!"
-  check rapunzel.ozParse.astToHtml() == getHtmlContentsFromAssetsDecorations("underlineInlineCommand")
+  check rapunzel.rapunzelParse.astToHtml() == getHtmlContentsFromAssetsDecorations("underlineInlineCommand")
 
 test "Color inline command":
   const
     rapunzelWithRed = "Hello, [#red Rapunzel]!"
     rapunzelWithRedDarken4 = "Hello, [#red:darken-4 Rapunzel]!"
     rapunzelWithColorCode = "Hello, [#1a2b3c Gothel]!"
-  check rapunzelWithRed.ozParse.astToHtml() == getHtmlContentsFromAssetsDecorations("redInlineCommand")
-  check rapunzelWithRedDarken4.ozParse.astToHtml() == getHtmlContentsFromAssetsDecorations("redDarken4InlineCommand")
-  check rapunzelWithColorCode.ozParse.astToHtml() == getHtmlContentsFromAssetsDecorations("colorCodeInlineCommand")
+  check rapunzelWithRed.rapunzelParse.astToHtml() == getHtmlContentsFromAssetsDecorations("redInlineCommand")
+  check rapunzelWithRedDarken4.rapunzelParse.astToHtml() == getHtmlContentsFromAssetsDecorations("redDarken4InlineCommand")
+  check rapunzelWithColorCode.rapunzelParse.astToHtml() == getHtmlContentsFromAssetsDecorations("colorCodeInlineCommand")

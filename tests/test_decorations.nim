@@ -30,7 +30,10 @@ test "Color inline command":
   const
     rapunzelWithRed = "Hello, [#red Rapunzel]!"
     rapunzelWithRedDarken4 = "Hello, [#red:darken-4 Rapunzel]!"
-    rapunzelWithColorCode = "Hello, [#1a2b3c Gothel]!"
+    rapunzelWithColorCode = "Hello, [#1a2b3c Rapunzel]!"
+    rapunzelWithNoExistColor = "Hello, [#undefined Rapunzel]!"
   check rapunzelWithRed.rapunzelParse.astToHtml() == getHtmlContentsFromAssetsDecorations("redInlineCommand")
   check rapunzelWithRedDarken4.rapunzelParse.astToHtml() == getHtmlContentsFromAssetsDecorations("redDarken4InlineCommand")
   check rapunzelWithColorCode.rapunzelParse.astToHtml() == getHtmlContentsFromAssetsDecorations("colorCodeInlineCommand")
+  expect UndefinedColorDefect:
+    discard rapunzelWithNoExistColor.rapunzelParse.astToHtml()

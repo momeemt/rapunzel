@@ -1,23 +1,26 @@
-import strutils, tables, strformat, times, json
+import strutils, tables, strformat, times, json, parsexml, streams
 
 type
   RapunzelNodeKind = enum
     rapunzelDocument, rapunzelParagraph, rapunzelBlock, rapunzelText,
     rapunzelBold, rapunzelItalic, rapunzelUnderline, rapunzelStrike,
-    rapunzelColor,
+    rapunzelColor, rapunzelHeader,
     rapunzelVariable, rapunzelExpand
 
   RapunzelNode = object
     case kind: RapunzelNodeKind
     of rapunzelColor:
       colorCode: string
+    of rapunzelHeader:
+      headerRank: uint8
     else: discard
-    children: seq[RapunzelNode]
     value: string
+    children: seq[RapunzelNode]
 
   ReassignmentDefect* = object of Defect
   UndefinedCommandDefect* = object of Defect
   UndefinedColorDefect* = object of Defect
+  UndefinedHeaderRankDefect* = object of Defect
 
 let
   ColorJson = parseFile("assets/colorPalette.json").getFields
@@ -30,6 +33,37 @@ proc isHexadecimal (maybeHex: string): bool =
   for character in maybeHex:
     if character notin {'0'..'9', 'a'..'f', 'A'..'F'}:
       return false
+
+proc formatHtml* (rawHtml: string): string =
+  var xmlParser: XmlParser
+  var stream = newStringStream(rawHtml)
+  open(xmlParser, stream, "header.html")
+  result = ""
+  var justBefore: XmlEventKind
+  var indent = 0
+  while true:
+    xmlParser.next()
+    case xmlParser.kind
+    of xmlElementStart:
+      if justBefore == xmlElementStart:
+        result &= '\n'
+      for _ in countdown(indent, 1):
+        result &= "  "
+      result &= &"<{xmlParser.elementName}>"
+      indent += 1
+    of xmlCharData:
+      result &= xmlParser.charData
+    of xmlElementEnd:
+      indent -= 1
+      if justBefore != xmlCharData:
+        for _ in countdown(indent, 1):
+          result &= "  "
+      result &= &"</{xmlParser.elementName}>\n"
+    of xmlEof: break
+    else: discard
+    justBefore = xmlParser.kind
+  xmlParser.close()
+  result = result[0..result.high-1]
 
 proc rapunzelParse* (rawRapunzel: string): RapunzelNode =
   result = RapunzelNode(kind: rapunzelDocument)
@@ -45,7 +79,9 @@ proc rapunzelParse* (rawRapunzel: string): RapunzelNode =
       continue
     let rawRapunzelChar = rawRapunzel[index]
     if rawRapunzelChar == '[':
-      result.children[result.children.high].children.add childNode
+      if childNode.value != "":
+        result.children[result.children.high].children.add childNode
+        childNode = RapunzelNode(kind: rapunzelText)
       let nextCharacter = rawRapunzel[index+1]
       skipCount = 2 # [? ...]の "? "をスキップ
 
@@ -79,25 +115,51 @@ proc rapunzelParse* (rawRapunzel: string): RapunzelNode =
           nameIndex += 1
         raise newException(UndefinedCommandDefect, &"{name} is undefined command.")
     elif rawRapunzelChar == '{':
-      result.children[result.children.high].children.add childNode
-      if rawRapunzel[index+1] == '%':
-        childNode = RapunzelNode(kind: rapunzelVariable)
-      elif rawRapunzel[index+1] == '=':
-        childNode = RapunzelNode(kind: rapunzelExpand)
+      if childNode.value != "":
+        result.children[result.children.high].children.add childNode
+        childNode = RapunzelNode(kind: rapunzelText)
+      let nextCharacter = rawRapunzel[index+1]
       skipCount = 2
+
+      childNode = case nextCharacter:
+      of '%': RapunzelNode(kind: rapunzelVariable)
+      of '=': RapunzelNode(kind: rapunzelExpand)
+      of '*':
+        var
+          headerRank = 1'u8
+          headerIndex = 2 # header-rankを取得するためのindex
+        while rawRapunzel[index+headerIndex] != ' ':
+          headerRank += 1
+          headerIndex += 1
+        if headerRank > 6:
+          raise newException(UndefinedHeaderRankDefect, &"Only up to 6 header ranks are supported. {headerRank} is undefined.")
+        skipCount += headerIndex - 2
+        RapunzelNode(kind: rapunzelHeader, headerRank: headerRank)
+      else:
+        var
+          name = ""
+          nameIndex = 2
+        while rawRapunzel[index+nameIndex] != ' ':
+          name.add rawRapunzel[index+nameIndex]
+          nameIndex += 1
+        raise newException(UndefinedCommandDefect, &"{name} is undefined command.")
+      
     elif rawRapunzelChar == ']' or rawRapunzelChar == '}':
       result.children[result.children.high].children.add childNode
       childNode = RapunzelNode(kind: rapunzelText)
     elif rawRapunzelChar == '\n':
-      result.children[result.children.high].children.add childNode
-      if rawRapunzel.high >= index + 2 and rawRapunzel[index+1] == '{':
-        result.children.add RapunzelNode(kind: rapunzelBlock)
-      else:
-        result.children.add RapunzelNode(kind: rapunzelParagraph)
-      childNode = RapunzelNode(kind: rapunzelText)
+      if childNode.value != "": # プレーンな文章を登録する
+        result.children[result.children.high].children.add childNode
+        childNode = RapunzelNode(kind: rapunzelText)
+      if rawRapunzel.high >= index + 2:
+        if rawRapunzel[index+1] == '{':
+          result.children.add RapunzelNode(kind: rapunzelBlock)
+        else:
+          result.children.add RapunzelNode(kind: rapunzelParagraph)
     else:
       childNode.value.add rawRapunzelChar
-  result.children[result.children.high].children.add childNode
+  if childNode.value != "":
+    result.children[result.children.high].children.add childNode
 
 var mtupVarsTable = initTable[string, string]()
 mtupVarsTable["now"] = ""
@@ -113,6 +175,9 @@ proc astToHtml* (ast: RapunzelNode): string =
   of rapunzelUnderline: "<span class=\"rapunzel--underline\">" & ast.value & "</span>"
   of rapunzelColor:
     "<span style=\"color: " & ast.colorCode & ";\">" & ast.value & "</span>"
+  of rapunzelHeader:
+    let tagName = "h" & $ast.headerRank
+    &"<{tagName}>" & ast.value & &"</{tagName}>"
   of rapunzelVariable:
     let
       varName = ast.value.split(',')[0].strip

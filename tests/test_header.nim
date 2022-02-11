@@ -19,4 +19,4 @@ test "Header command":
 {***** Header5}
 {****** Header6}
 """
-  check rapunzel.rapunzelParse.astToHtml() == getHtmlContentsFromAssetsHeaders("header")
+  check rapunzel.rapunzelParse.astToHtml().formatHtml() == getHtmlContentsFromAssetsHeaders("header")

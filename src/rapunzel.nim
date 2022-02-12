@@ -105,6 +105,7 @@ proc rapunzelParse* (rawRapunzel: string): RapunzelNode =
     let rawRapunzelChar = rawRapunzel[index]
     if rawRapunzelChar == '[':
       result = result.updateChildNode(childNode, openingParenthesisCount)
+      childNode = RapunzelNode(kind: rapunzelNone)
       openingParenthesisCount += 1
 
       let nextCharacter = rawRapunzel[index+1]
@@ -141,6 +142,7 @@ proc rapunzelParse* (rawRapunzel: string): RapunzelNode =
         raise newException(UndefinedCommandDefect, &"{name} is undefined command.")
     elif rawRapunzelChar == '{':
       result = result.updateChildNode(childNode, openingParenthesisCount)
+      childNode = RapunzelNode(kind: rapunzelNone)
       openingParenthesisCount += 1
 
       let nextCharacter = rawRapunzel[index+1]
@@ -180,13 +182,13 @@ proc rapunzelParse* (rawRapunzel: string): RapunzelNode =
       
     elif rawRapunzelChar == ']' or rawRapunzelChar == '}':
       result = result.updateChildNode(childNode, openingParenthesisCount)
-      openingParenthesisCount -= 1
       childNode = RapunzelNode(kind: rapunzelNone)
+      openingParenthesisCount -= 1
     elif rawRapunzelChar == '\n':
-      if (childNode.kind != rapunzelText) and (childNode.value == ""):
+      if (childNode.kind != rapunzelText) or (childNode.value == ""):
         continue
-
       result = result.updateChildNode(childNode, openingParenthesisCount)
+      childNode = RapunzelNode(kind: rapunzelNone)
       if rawRapunzel.high >= index + 2:
         if rawRapunzel[index+1] == '{':
           result.children.add RapunzelNode(kind: rapunzelBlock)

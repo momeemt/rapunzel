@@ -65,6 +65,27 @@ proc formatHtml* (rawHtml: string): string =
   xmlParser.close()
   result = result[0..result.high-1]
 
+func updateChildNode (src, child: RapunzelNode, openingParenthesisCount: int): RapunzelNode =
+  if child.kind == rapunzelText and child.value == "": # 空のテキストノードを追加しない
+    return src
+  var nodeSeqByDepth = @[new RapunzelNode]
+  nodeSeqByDepth[0][] = src
+  # openingParenthesisCountが0の時、テキストノードを扱っている
+  # ネスト数は閉じられていない左括弧より、1少なくなる
+  var nestCount = max(openingParenthesisCount-1, 0)
+  # 更新する部分木とその経路を保存する
+  for index in 0..nestCount:
+    let
+      node = nodeSeqByDepth[index][]
+      subnode = node.children[node.children.high]
+    nodeSeqByDepth.add new RapunzelNode
+    nodeSeqByDepth[index+1][] = subnode
+  nodeSeqByDepth[nodeSeqByDepth.high][].children.add child
+  # 更新した部分木で経路を元に親の部分木を更新する
+  for index in countdown(nestCount, 0):
+    nodeSeqByDepth[index][].children[nodeSeqByDepth[index][].children.high] = nodeSeqByDepth[index+1][]
+  result = nodeSeqByDepth[0][]
+
 proc rapunzelParse* (rawRapunzel: string): RapunzelNode =
   result = RapunzelNode(kind: rapunzelDocument)
   if rawRapunzel.len >= 2 and rawRapunzel[0] == '{':
@@ -73,15 +94,16 @@ proc rapunzelParse* (rawRapunzel: string): RapunzelNode =
     result.children.add RapunzelNode(kind: rapunzelParagraph)
   var childNode = RapunzelNode(kind: rapunzelText)
   var skipCount = 0
+  var openingParenthesisCount = 0 # 閉じられていない '[', '{' の個数
   for index in 0..rawRapunzel.high:
     if skipCount > 0:
       skipCount -= 1
       continue
     let rawRapunzelChar = rawRapunzel[index]
     if rawRapunzelChar == '[':
-      if childNode.value != "":
-        result.children[result.children.high].children.add childNode
-        childNode = RapunzelNode(kind: rapunzelText)
+      result = result.updateChildNode(childNode, openingParenthesisCount)
+      openingParenthesisCount += 1
+
       let nextCharacter = rawRapunzel[index+1]
       skipCount = 2 # [? ...]の "? "をスキップ
 
@@ -115,9 +137,9 @@ proc rapunzelParse* (rawRapunzel: string): RapunzelNode =
           nameIndex += 1
         raise newException(UndefinedCommandDefect, &"{name} is undefined command.")
     elif rawRapunzelChar == '{':
-      if childNode.value != "":
-        result.children[result.children.high].children.add childNode
-        childNode = RapunzelNode(kind: rapunzelText)
+      result = result.updateChildNode(childNode, openingParenthesisCount)
+      openingParenthesisCount += 1
+
       let nextCharacter = rawRapunzel[index+1]
       skipCount = 2
 
@@ -145,7 +167,8 @@ proc rapunzelParse* (rawRapunzel: string): RapunzelNode =
         raise newException(UndefinedCommandDefect, &"{name} is undefined command.")
       
     elif rawRapunzelChar == ']' or rawRapunzelChar == '}':
-      result.children[result.children.high].children.add childNode
+      result = result.updateChildNode(childNode, openingParenthesisCount)
+      openingParenthesisCount -= 1
       childNode = RapunzelNode(kind: rapunzelText)
     elif rawRapunzelChar == '\n':
       if childNode.value != "": # プレーンな文章を登録する
@@ -169,12 +192,21 @@ proc childrenValue (ast: RapunzelNode): string
 proc astToHtml* (ast: RapunzelNode): string =
   result = case ast.kind:
   of rapunzelText: ast.value
-  of rapunzelBold: "<b>" & ast.value & "</b>"
-  of rapunzelItalic: "<em>" & ast.value & "</em>"
-  of rapunzelStrike: "<span class=\"rapunzel--strike\">" & ast.value & "</span>"
-  of rapunzelUnderline: "<span class=\"rapunzel--underline\">" & ast.value & "</span>"
+  of rapunzelBold:
+    if ast.children.len == 0: "<b>" & ast.value & "</b>"
+    else: "<b>" & ast.childrenValue & "</b>"
+  of rapunzelItalic:
+    if ast.children.len == 0: "<em>" & ast.value & "</em>"
+    else: "<em>" & ast.childrenValue & "</em>"
+  of rapunzelStrike:
+    if ast.children.len == 0: "<span class=\"rapunzel--strike\">" & ast.value & "</span>"
+    else: "<span class=\"rapunzel--strike\">" & ast.childrenValue & "</span>"
+  of rapunzelUnderline:
+    if ast.children.len == 0: "<span class=\"rapunzel--underline\">" & ast.value & "</span>"
+    else: "<span class=\"rapunzel--underline\">" & ast.childrenValue & "</span>"
   of rapunzelColor:
-    "<span style=\"color: " & ast.colorCode & ";\">" & ast.value & "</span>"
+    if ast.children.len == 0: "<span style=\"color: " & ast.colorCode & ";\">" & ast.value & "</span>"
+    else: "<span style=\"color: " & ast.colorCode & ";\">" & ast.childrenValue & "</span>"
   of rapunzelHeader:
     let tagName = "h" & $ast.headerRank
     &"<{tagName}>" & ast.value & &"</{tagName}>"

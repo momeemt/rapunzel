@@ -1,22 +1,22 @@
 import std/strformat
 
 type
-  RapunzelNodeKind = enum
+  RapunzelNodeKind* = enum
     rapunzelDocument, rapunzelParagraph, rapunzelBlock, rapunzelText,
     rapunzelBold, rapunzelItalic, rapunzelUnderline, rapunzelStrike,
     rapunzelColor, rapunzelHeader,
     rapunzelVariable, rapunzelExpand,
     rapunzelNone
 
-  RapunzelNode = object
-    case kind: RapunzelNodeKind
+  RapunzelNode* = object
+    case kind*: RapunzelNodeKind
     of rapunzelColor:
-      colorCode: string
+      colorCode*: string
     of rapunzelHeader:
-      headerRank: uint8
+      headerRank*: uint8
     else: discard
-    value: string
-    children: seq[RapunzelNode]
+    value*: string
+    children*: seq[RapunzelNode]
 
 proc rapunzelNodeRepr (ast: RapunzelNode, nest: int): string
 proc rapunzelChildrenNodeRepr (ast: RapunzelNode, nest: int): string

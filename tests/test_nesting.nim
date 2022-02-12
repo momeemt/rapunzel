@@ -37,4 +37,4 @@ test "inline-nest command including newline":
 {* Hello, Rapunzel!}
  [* Rapunzel] is a markup language for writing blogs that aims to provide not only the syntax expressible in Markdown, but also the ability to interpret [* [_ Nim expressions]] and handle customizable designs.
 """
-  check rapunzel.rapunzelParse.astToHtml().formatHtml() == getHtmlContentsFromAssetsNesting("inline-nest-nl1")
+  check rapunzel.rapunzelParse.astToHtml() == getHtmlContentsFromAssetsNesting("inline-nest-nl1")

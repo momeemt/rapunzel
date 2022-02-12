@@ -1,12 +1,5 @@
 import tables, json
 
-type
-  ReassignmentDefect* = object of Defect
-  UndefinedCommandDefect* = object of Defect
-  UndefinedColorDefect* = object of Defect
-  UndefinedHeaderRankDefect* = object of Defect
-
-
 proc isHexadecimal (maybeHex: string): bool =
   result = true
   for character in maybeHex:

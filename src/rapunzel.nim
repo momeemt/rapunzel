@@ -5,7 +5,8 @@ type
     rapunzelDocument, rapunzelParagraph, rapunzelBlock, rapunzelText,
     rapunzelBold, rapunzelItalic, rapunzelUnderline, rapunzelStrike,
     rapunzelColor, rapunzelHeader,
-    rapunzelVariable, rapunzelExpand
+    rapunzelVariable, rapunzelExpand,
+    rapunzelNone # 未決定のノード
 
   RapunzelNode = object
     case kind: RapunzelNodeKind
@@ -66,6 +67,8 @@ proc formatHtml* (rawHtml: string): string =
   result = result[0..result.high-1]
 
 func updateChildNode (src, child: RapunzelNode, openingParenthesisCount: int): RapunzelNode =
+  if child.kind == rapunzelNone:
+    return src
   if child.kind == rapunzelText and child.value == "": # 空のテキストノードを追加しない
     return src
   var nodeSeqByDepth = @[new RapunzelNode]
@@ -92,7 +95,7 @@ proc rapunzelParse* (rawRapunzel: string): RapunzelNode =
     result.children.add RapunzelNode(kind: rapunzelBlock)
   else:
     result.children.add RapunzelNode(kind: rapunzelParagraph)
-  var childNode = RapunzelNode(kind: rapunzelText)
+  var childNode = RapunzelNode(kind: rapunzelNone)
   var skipCount = 0
   var openingParenthesisCount = 0 # 閉じられていない '[', '{' の個数
   for index in 0..rawRapunzel.high:
@@ -178,7 +181,7 @@ proc rapunzelParse* (rawRapunzel: string): RapunzelNode =
     elif rawRapunzelChar == ']' or rawRapunzelChar == '}':
       result = result.updateChildNode(childNode, openingParenthesisCount)
       openingParenthesisCount -= 1
-      childNode = RapunzelNode(kind: rapunzelText)
+      childNode = RapunzelNode(kind: rapunzelNone)
     elif rawRapunzelChar == '\n':
       if (childNode.kind == rapunzelText) and (childNode.value != ""):
         continue
@@ -189,8 +192,12 @@ proc rapunzelParse* (rawRapunzel: string): RapunzelNode =
         else:
           result.children.add RapunzelNode(kind: rapunzelParagraph)
     else:
+      if rawRapunzelChar == '\t':
+        continue
+      if childNode.kind == rapunzelNone:
+        childNode = RapunzelNode(kind: rapunzelText)
       childNode.value.add rawRapunzelChar
-  if childNode.value != "":
+  if (childNode.kind == rapunzelText) and (childNode.value != ""):
     result.children[result.children.high].children.add childNode
 
 var mtupVarsTable = initTable[string, string]()
@@ -241,6 +248,7 @@ proc astToHtml* (ast: RapunzelNode): string =
     res
   of rapunzelParagraph: "<p>" & ast.childrenValue & "</p>"
   of rapunzelDocument, rapunzelBlock: ast.childrenValue
+  of rapunzelNone: "" # Todo: 例外を投げる
 
 proc childrenValue (ast: RapunzelNode): string =
   for child in ast.children:

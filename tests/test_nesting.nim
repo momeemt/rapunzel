@@ -31,3 +31,10 @@ test "block-inline-nest command":
 }
 """
   check rapunzel.rapunzelParse.astToHtml() == getHtmlContentsFromAssetsNesting("block-inline-nest1")
+
+test "inline-nest command including newline":
+  const rapunzel = """
+{* Hello, Rapunzel!}
+ [* Rapunzel] is a markup language for writing blogs that aims to provide not only the syntax expressible in Markdown, but also the ability to interpret [* [_ Nim expressions]] and handle customizable designs.
+"""
+  check rapunzel.rapunzelParse.astToHtml().formatHtml() == getHtmlContentsFromAssetsNesting("inline-nest-nl1")

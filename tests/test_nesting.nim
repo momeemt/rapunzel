@@ -11,8 +11,10 @@ proc getHtmlContentsFromAssetsNesting (name: string): string =
     result = file.readAll()
 
 test "inline-nest command":
-  const rapunzel = "Hello, [* [/ Rapunzel]]!"
-  check rapunzel.rapunzelParse.astToHtml().formatHtml() == getHtmlContentsFromAssetsNesting("inline-nest1")
+  const rapunzelNest1 = "Hello, [* [/ Rapunzel]]!"
+  const rapunzelNest2 = "Hello, [~ [* [/ Rapunzel]]]!"
+  check rapunzelNest1.rapunzelParse.astToHtml() == getHtmlContentsFromAssetsNesting("inline-nest1")
+  check rapunzelNest2.rapunzelParse.astToHtml() == getHtmlContentsFromAssetsNesting("inline-nest2")
 
 test "block command including newline":
   const rapunzel = """

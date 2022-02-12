@@ -150,9 +150,18 @@ proc rapunzelParse* (rawRapunzel: string): RapunzelNode =
         var
           headerRank = 1'u8
           headerIndex = 2 # header-rankを取得するためのindex
-        while rawRapunzel[index+headerIndex] != ' ':
-          headerRank += 1
-          headerIndex += 1
+        while rawRapunzel[index+headerIndex] != ' ' and rawRapunzel[index+headerIndex] != '\n':
+          if rawRapunzel[index+headerIndex] == '*':
+            headerRank += 1
+            headerIndex += 1
+          else:
+            var
+              name = ""
+              nameIndex = 1
+            while rawRapunzel[index+nameIndex] != ' ':
+              name.add rawRapunzel[index+nameIndex]
+              nameIndex += 1
+            raise newException(UndefinedCommandDefect, &"{name} is undefined command.")
         if headerRank > 6:
           raise newException(UndefinedHeaderRankDefect, &"Only up to 6 header ranks are supported. {headerRank} is undefined.")
         skipCount += headerIndex - 2
@@ -171,9 +180,10 @@ proc rapunzelParse* (rawRapunzel: string): RapunzelNode =
       openingParenthesisCount -= 1
       childNode = RapunzelNode(kind: rapunzelText)
     elif rawRapunzelChar == '\n':
-      if childNode.value != "": # プレーンな文章を登録する
-        result.children[result.children.high].children.add childNode
-        childNode = RapunzelNode(kind: rapunzelText)
+      if childNode.kind != rapunzelText:
+        continue
+
+      result = result.updateChildNode(childNode, openingParenthesisCount)
       if rawRapunzel.high >= index + 2:
         if rawRapunzel[index+1] == '{':
           result.children.add RapunzelNode(kind: rapunzelBlock)

@@ -1,5 +1,5 @@
 import unittest
-import rapunzel, rapunzel/[formatHTML]
+import rapunzel
 
 proc getHtmlContentsFromAssetsHeaders (name: string): string =
   block:

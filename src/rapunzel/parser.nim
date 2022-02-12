@@ -1,5 +1,5 @@
 import std/[json, strformat, tables]
-import node, types
+import node, types, utils
 
 let colorJson = parseFile("assets/colorPalette.json").getFields
 var colorJsonKey: seq[string]

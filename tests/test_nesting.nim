@@ -19,15 +19,15 @@ test "inline-nest command":
 test "block command including newline":
   const rapunzel = """
 {*
-  Header1
+	Header1
 }
 """
-  check rapunzel.rapunzelParse.astToHtml().formatHtml() == getHtmlContentsFromAssetsNesting("inc-nl-block1")
+  check rapunzel.rapunzelParse.astToHtml() == getHtmlContentsFromAssetsNesting("inc-nl-block1")
 
 test "block-inline-nest command":
   const rapunzel = """
 {*
-  [/ Header1]
+	[/ Header1]
 }
 """
-  check rapunzel.rapunzelParse.astToHtml().formatHtml() == getHtmlContentsFromAssetsNesting("block-inline-nest1")
+  check rapunzel.rapunzelParse.astToHtml() == getHtmlContentsFromAssetsNesting("block-inline-nest1")

@@ -201,25 +201,26 @@ proc childrenValue (ast: RapunzelNode): string
 
 proc astToHtml* (ast: RapunzelNode): string =
   result = case ast.kind:
-  of rapunzelText: ast.value
+  of rapunzelText: ast.value.strip(true, false, {'\t'})
   of rapunzelBold:
-    if ast.children.len == 0: "<b>" & ast.value & "</b>"
+    if ast.children.len == 0: "<b>" & ast.value.strip(true, false, {'\t'}) & "</b>"
     else: "<b>" & ast.childrenValue & "</b>"
   of rapunzelItalic:
-    if ast.children.len == 0: "<em>" & ast.value & "</em>"
+    if ast.children.len == 0: "<em>" & ast.value.strip(true, false, {'\t'}) & "</em>"
     else: "<em>" & ast.childrenValue & "</em>"
   of rapunzelStrike:
-    if ast.children.len == 0: "<span class=\"rapunzel--strike\">" & ast.value & "</span>"
+    if ast.children.len == 0: "<span class=\"rapunzel--strike\">" & ast.value.strip(true, false, {'\t'}) & "</span>"
     else: "<span class=\"rapunzel--strike\">" & ast.childrenValue & "</span>"
   of rapunzelUnderline:
-    if ast.children.len == 0: "<span class=\"rapunzel--underline\">" & ast.value & "</span>"
+    if ast.children.len == 0: "<span class=\"rapunzel--underline\">" & ast.value.strip(true, false, {'\t'}) & "</span>"
     else: "<span class=\"rapunzel--underline\">" & ast.childrenValue & "</span>"
   of rapunzelColor:
-    if ast.children.len == 0: "<span style=\"color: " & ast.colorCode & ";\">" & ast.value & "</span>"
+    if ast.children.len == 0: "<span style=\"color: " & ast.colorCode & ";\">" & ast.value.strip(true, false, {'\t'}) & "</span>"
     else: "<span style=\"color: " & ast.colorCode & ";\">" & ast.childrenValue & "</span>"
   of rapunzelHeader:
     let tagName = "h" & $ast.headerRank
-    &"<{tagName}>" & ast.value & &"</{tagName}>"
+    if ast.children.len == 0: &"<{tagName}>" & ast.value.strip(true, false, {'\t'}) & &"</{tagName}>"
+    else: &"<{tagName}>" & ast.childrenValue & &"</{tagName}>"
   of rapunzelVariable:
     let
       varName = ast.value.split(',')[0].strip

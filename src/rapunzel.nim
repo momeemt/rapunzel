@@ -256,3 +256,29 @@ proc astToHtml* (ast: RapunzelNode): string =
 proc childrenValue (ast: RapunzelNode): string =
   for child in ast.children:
     result &= child.astToHtml()
+
+proc rapunzelChildrenNodeRepr (ast: RapunzelNode, nest: int): string 
+
+proc rapunzelNodeRepr (ast: RapunzelNode, nest: int): string =
+  if ast.children.len > 0:
+    result = ast.rapunzelChildrenNodeRepr(nest)
+  else:
+    for index in 0..<nest:
+      result &= "  "
+    if ast.value.len > 0:
+      result &= &"{$ast.kind} (value = {ast.value})\n"
+    else:
+      result &= &"{$ast.kind}\n"
+
+proc rapunzelChildrenNodeRepr (ast: RapunzelNode, nest: int): string =
+  for index in 0..<nest:
+    result &= "  "
+  if ast.value.len > 0:
+    result &= &"{$ast.kind} (value = {ast.value})\n"
+  else:
+    result &= &"{$ast.kind}\n"
+  for child in ast.children:
+    result &= child.rapunzelNodeRepr(nest + 1)
+
+proc `$`* (ast: RapunzelNode): string =
+  result = ast.rapunzelNodeRepr(0)

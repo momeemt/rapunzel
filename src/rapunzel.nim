@@ -183,7 +183,7 @@ proc rapunzelParse* (rawRapunzel: string): RapunzelNode =
       openingParenthesisCount -= 1
       childNode = RapunzelNode(kind: rapunzelNone)
     elif rawRapunzelChar == '\n':
-      if childNode.kind != rapunzelText:
+      if (childNode.kind != rapunzelText) and (childNode.value == ""):
         continue
 
       result = result.updateChildNode(childNode, openingParenthesisCount)

@@ -132,7 +132,7 @@ proc parseRightCurlyBracket (stream: var RapunzelStream): RapunzelNode =
     stream.addBlockOrParagraph(+2)
   stream.next() # ノード追加が　\n と重複するから, }直後が `\n`　であるかどうかも調べる
 
-proc rapunzelParse* (str: string): RapunzelNode =
+proc parseRapunzel* (str: string): RapunzelNode =
   var
     stream = initRapunzelStream(str)
     childNode = RapunzelNode(kind: rapunzelNone)
@@ -185,4 +185,4 @@ proc readFileToEOF (path: string): string =
 
 proc parseRapunzelFile* (path: string): RapunzelNode =
   let rapunzel = readFileToEOF(path)
-  result = rapunzel.rapunzelParse
+  result = rapunzel.parseRapunzel

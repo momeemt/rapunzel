@@ -19,9 +19,9 @@ test "Header command":
 {***** Header5}
 {****** Header6}
 """
-  check rapunzel.rapunzelParse.astToHtml().formatHtml() == getHtmlContentsFromAssetsHeaders("header")
+  check rapunzel.parseRapunzel.astToHtml().formatHtml() == getHtmlContentsFromAssetsHeaders("header")
 
 test "Wrong Header command":
   const rapunzel = "{*? Header1}"
   expect UndefinedCommandDefect:
-    discard rapunzel.rapunzelParse.astToHtml()
+    discard rapunzel.parseRapunzel.astToHtml()

@@ -12,19 +12,19 @@ proc getHtmlContentsFromAssetsDecorations (name: string): string =
 
 test "Bold inline command":
   const rapunzel = "Hello, [* Rapunzel]!"
-  check rapunzel.rapunzelParse.astToHtml() == getHtmlContentsFromAssetsDecorations("boldInlineCommand")
+  check rapunzel.parseRapunzel.astToHtml() == getHtmlContentsFromAssetsDecorations("boldInlineCommand")
 
 test "Italic inline command":
   const rapunzel = "Hello, [/ Rapunzel]!"
-  check rapunzel.rapunzelParse.astToHtml() == getHtmlContentsFromAssetsDecorations("italicInlineCommand")
+  check rapunzel.parseRapunzel.astToHtml() == getHtmlContentsFromAssetsDecorations("italicInlineCommand")
 
 test "Strike inline command":
   const rapunzel = "Hello, [~ Rapunzel]!"
-  check rapunzel.rapunzelParse.astToHtml() == getHtmlContentsFromAssetsDecorations("strikeInlineCommand")
+  check rapunzel.parseRapunzel.astToHtml() == getHtmlContentsFromAssetsDecorations("strikeInlineCommand")
 
 test "Underline inline command":
   const rapunzel = "Hello, [_ Rapunzel]!"
-  check rapunzel.rapunzelParse.astToHtml() == getHtmlContentsFromAssetsDecorations("underlineInlineCommand")
+  check rapunzel.parseRapunzel.astToHtml() == getHtmlContentsFromAssetsDecorations("underlineInlineCommand")
 
 test "Color inline command":
   const
@@ -32,8 +32,8 @@ test "Color inline command":
     rapunzelWithRedDarken4 = "Hello, [#red:darken-4 Rapunzel]!"
     rapunzelWithColorCode = "Hello, [#1a2b3c Rapunzel]!"
     rapunzelWithNoExistColor = "Hello, [#undefined Rapunzel]!"
-  check rapunzelWithRed.rapunzelParse.astToHtml() == getHtmlContentsFromAssetsDecorations("redInlineCommand")
-  check rapunzelWithRedDarken4.rapunzelParse.astToHtml() == getHtmlContentsFromAssetsDecorations("redDarken4InlineCommand")
-  check rapunzelWithColorCode.rapunzelParse.astToHtml() == getHtmlContentsFromAssetsDecorations("colorCodeInlineCommand")
+  check rapunzelWithRed.parseRapunzel.astToHtml() == getHtmlContentsFromAssetsDecorations("redInlineCommand")
+  check rapunzelWithRedDarken4.parseRapunzel.astToHtml() == getHtmlContentsFromAssetsDecorations("redDarken4InlineCommand")
+  check rapunzelWithColorCode.parseRapunzel.astToHtml() == getHtmlContentsFromAssetsDecorations("colorCodeInlineCommand")
   expect UndefinedColorDefect:
-    discard rapunzelWithNoExistColor.rapunzelParse.astToHtml()
+    discard rapunzelWithNoExistColor.parseRapunzel.astToHtml()

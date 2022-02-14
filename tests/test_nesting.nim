@@ -13,8 +13,8 @@ proc getHtmlContentsFromAssetsNesting (name: string): string =
 test "inline-nest command":
   const rapunzelNest1 = "Hello, [* [/ Rapunzel]]!"
   const rapunzelNest2 = "Hello, [~ [* [/ Rapunzel]]]!"
-  check rapunzelNest1.rapunzelParse.astToHtml() == getHtmlContentsFromAssetsNesting("inline-nest1")
-  check rapunzelNest2.rapunzelParse.astToHtml() == getHtmlContentsFromAssetsNesting("inline-nest2")
+  check rapunzelNest1.parseRapunzel.astToHtml() == getHtmlContentsFromAssetsNesting("inline-nest1")
+  check rapunzelNest2.parseRapunzel.astToHtml() == getHtmlContentsFromAssetsNesting("inline-nest2")
 
 test "block command including newline":
   const rapunzel = """
@@ -22,7 +22,7 @@ test "block command including newline":
 	Header1
 }
 """
-  check rapunzel.rapunzelParse.astToHtml() == getHtmlContentsFromAssetsNesting("inc-nl-block1")
+  check rapunzel.parseRapunzel.astToHtml() == getHtmlContentsFromAssetsNesting("inc-nl-block1")
 
 test "block-inline-nest command":
   const rapunzel = """
@@ -30,11 +30,11 @@ test "block-inline-nest command":
 	[/ Header1]
 }
 """
-  check rapunzel.rapunzelParse.astToHtml() == getHtmlContentsFromAssetsNesting("block-inline-nest1")
+  check rapunzel.parseRapunzel.astToHtml() == getHtmlContentsFromAssetsNesting("block-inline-nest1")
 
 test "inline-nest command including newline":
   const rapunzel = """
 {* Hello, Rapunzel!}
  [* Rapunzel] is a markup language for writing blogs that aims to provide not only the syntax expressible in Markdown, but also the ability to interpret [* [_ Nim expressions]] and handle customizable designs.
 """
-  check rapunzel.rapunzelParse.astToHtml() == getHtmlContentsFromAssetsNesting("inline-nest-nl1")
+  check rapunzel.parseRapunzel.astToHtml() == getHtmlContentsFromAssetsNesting("inline-nest-nl1")

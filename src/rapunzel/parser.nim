@@ -174,15 +174,13 @@ proc parseRapunzel* (str: string): RapunzelNode =
   
   result = stream.node
 
-
-proc readFileToEOF (path: string): string =
+proc readFileAll (path: string): string =
   block:
     var file = open(path, FileMode.fmRead)
     defer:
       file.close()
-    while not file.endOfFile:
-      result &= file.readLine()
+    result = file.readAll
 
 proc parseRapunzelFile* (path: string): RapunzelNode =
-  let rapunzel = readFileToEOF(path)
+  let rapunzel = readFileAll(path)
   result = rapunzel.parseRapunzel

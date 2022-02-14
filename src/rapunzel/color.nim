@@ -1,4 +1,6 @@
-{
+import std/[json, tables]
+
+let colorJson* = getFields(%*{
   "red": "#F44336",
   "red:lighten-5": "#FFEBEE",
   "red:lighten-4": "#FFCDD2",
@@ -255,4 +257,10 @@
   "grey:darken-4": "#212121",
   "black": "#000000",
   "white": "#FFFFFF"
-}
+})
+
+var tmpColorJsonKey: seq[string]
+for key in colorJson.keys:
+  tmpColorJsonKey.add key
+
+let colorJsonKey* = tmpColorJsonKey

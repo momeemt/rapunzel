@@ -1,5 +1,6 @@
 import std/[json, strformat, strutils, tables]
 import node, types, utils
+from color import colorJson, colorJsonKey
 
 type
   RapunzelStream = object
@@ -7,10 +8,6 @@ type
     str: string
     openingParenthesisCount: int # 閉じられていない '[', '{' の個数
     node: RapunzelNode
-
-let colorJson = parseFile("assets/colorPalette.json").getFields
-var colorJsonKey: seq[string]
-for key in colorJson.keys: colorJsonKey.add key
 
 func initRapunzelStream (str: string): RapunzelStream =
   result = RapunzelStream(
